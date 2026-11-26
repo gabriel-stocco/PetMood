@@ -1,0 +1,10 @@
+{
+  "name": "PetMood",
+  "description": "Aplicativo móvel de gestão pet (TG-Stocco) em React Native + Expo Managed Workflow com TypeScript.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "PetMood",
+    "slug": "petmood",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "petmood",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FDF8F2",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tgstocco.petmood",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.tgstocco.petmood",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "backgroundColor": "#FDF8F2"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_FULL_SCREEN_INTENT",
+        "android.permission.WAKE_LOCK"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#D96B08",
+          "sounds": [
+            "./assets/sounds/alarm.wav"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O PetMood precisa acessar sua galeria para salvar fotos de perfil, dos seus pets e da carteira de vacinação.",
+          "cameraPermission": "O PetMood precisa acessar sua câmera para tirar fotos de perfil, dos seus pets e da carteira de vacinação."
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-audio",
+      "expo-asset"
+    ]
+  }
+}
