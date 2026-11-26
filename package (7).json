@@ -1,0 +1,46 @@
+{
+  "name": "petmood",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
+    "start": "node server.js",
+    "preview": "npm run build && npm start",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit",
+    "test:api": "python -I aws/tests/test_handler.py",
+    "android:sync": "vite build && cap sync android",
+    "android:apk": "bash scripts/build-apk.sh"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/share": "^8.0.3",
+    "@capgo/capacitor-social-login": "^8.7.13",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "express": "^4.21.2",
+    "jspdf": "^4.2.1",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^8.3.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.3",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.28.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2"
+  }
+}
