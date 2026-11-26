@@ -1,469 +1,341 @@
-import { useMemo, useState } from 'react';
-import { Check, Copy, Play, RotateCcw } from 'lucide-react';
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import React, { useEffect, useState } from 'react';
+import { AppProvider, useApp } from './context/AppContext';
+import { PageCustomScrollbar } from './components/CustomScrollbar';
+import { PhotoViewerModal } from './components/PhotoViewerModal';
+import { SwipeableNotificationBanner } from './components/SwipeableNotificationBanner';
+import {
+  getAlarmSoundProfileLabel,
+  unlockWebAlarmAudio,
+} from './services/eventNotifications';
+import { LoginScreen } from './screens/LoginScreen';
+import { RegisterScreen } from './screens/RegisterScreen';
+import { HomeScreen } from './screens/HomeScreen';
+import { AddAnimalScreen } from './screens/AddAnimalScreen';
+import { TipsScreen } from './screens/TipsScreen';
+import { EventsScreen } from './screens/EventsScreen';
+import { VaccinesScreen } from './screens/VaccinesScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
-interface GreetingLocale {
-  id: string;
-  label: string;
-  nativeName: string;
-  prefix: string;
-  defaultTarget: string;
-  suffix: string;
-  note: string;
-}
-
-interface CodeExample {
-  id: string;
-  name: string;
-  filename: string;
-  year: string;
-  render: (message: string) => string;
-}
-
-const LOCALES: GreetingLocale[] = [
-  {
-    id: 'en',
-    label: 'Inglês',
-    nativeName: 'English',
-    prefix: 'Hello, ',
-    defaultTarget: 'World',
-    suffix: '!',
-    note: 'A forma clássica popularizada por Brian Kernighan nos anos 1970.',
-  },
-  {
-    id: 'pt',
-    label: 'Português',
-    nativeName: 'Português',
-    prefix: 'Olá, ',
-    defaultTarget: 'Mundo',
-    suffix: '!',
-    note: 'A primeira frase que quase todo programador lusófono escreve no terminal.',
-  },
-  {
-    id: 'es',
-    label: 'Espanhol',
-    nativeName: 'Español',
-    prefix: '¡Hola, ',
-    defaultTarget: 'Mundo',
-    suffix: '!',
-    note: 'Saudação tradicional usada em tutoriais de programação em espanhol.',
-  },
-  {
-    id: 'fr',
-    label: 'Francês',
-    nativeName: 'Français',
-    prefix: 'Bonjour, ',
-    defaultTarget: 'le Monde',
-    suffix: ' !',
-    note: 'Versão francesa clássica para testar a primeira saída de um programa.',
-  },
-  {
-    id: 'de',
-    label: 'Alemão',
-    nativeName: 'Deutsch',
-    prefix: 'Hallo, ',
-    defaultTarget: 'Welt',
-    suffix: '!',
-    note: 'Forma concisa adotada na documentação técnica em língua alemã.',
-  },
-  {
-    id: 'ja',
-    label: 'Japonês',
-    nativeName: '日本語',
-    prefix: 'こんにちは、',
-    defaultTarget: '世界',
-    suffix: '！',
-    note: 'Excelente teste também para confirmar suporte completo a UTF-8.',
-  },
-];
-
-function escapeDoubleQuotes(text: string): string {
-  return text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-const CODE_EXAMPLES: CodeExample[] = [
-  {
-    id: 'ts',
-    name: 'TypeScript',
-    filename: 'hello.ts',
-    year: '2012',
-    render: (msg) =>
-      `const greeting: string = "${escapeDoubleQuotes(msg)}";\nconsole.log(greeting);`,
-  },
-  {
-    id: 'py',
-    name: 'Python',
-    filename: 'hello.py',
-    year: '1991',
-    render: (msg) => `print("${escapeDoubleQuotes(msg)}")`,
-  },
-  {
-    id: 'c',
-    name: 'C',
-    filename: 'hello.c',
-    year: '1972',
-    render: (msg) =>
-      `#include <stdio.h>\n\nint main(void) {\n  printf("${escapeDoubleQuotes(msg)}\\n");\n  return 0;\n}`,
-  },
-  {
-    id: 'rust',
-    name: 'Rust',
-    filename: 'main.rs',
-    year: '2010',
-    render: (msg) =>
-      `fn main() {\n    println!("${escapeDoubleQuotes(msg)}");\n}`,
-  },
-  {
-    id: 'go',
-    name: 'Go',
-    filename: 'main.go',
-    year: '2009',
-    render: (msg) =>
-      `package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("${escapeDoubleQuotes(msg)}")\n}`,
-  },
-  {
-    id: 'html',
-    name: 'HTML',
-    filename: 'index.html',
-    year: '1993',
-    render: (msg) => `<!doctype html>\n<h1>${escapeHtml(msg)}</h1>`,
-  },
-];
-
-export default function App() {
-  const [localeId, setLocaleId] = useState<string>('en');
-  const [customTarget, setCustomTarget] = useState<string>('');
-  const [codeLangId, setCodeLangId] = useState<string>('ts');
-  const [copiedKey, setCopiedKey] = useState<'greeting' | 'code' | null>(null);
-  const [outputLines, setOutputLines] = useState<string[]>([
-    'Hello, World!',
-  ]);
-
-  const activeLocale = useMemo(
-    () => LOCALES.find((item) => item.id === localeId) ?? LOCALES[0],
-    [localeId],
+const AuthFlow: React.FC = () => {
+  const [screen, setScreen] = useState<'Login' | 'Register'>('Login');
+  return (
+    <>
+      <PageCustomScrollbar topOffset={12} bottomOffset={12} />
+      {screen === 'Register' ? (
+        <RegisterScreen onNavigateToLogin={() => setScreen('Login')} />
+      ) : (
+        <LoginScreen onNavigateToRegister={() => setScreen('Register')} />
+      )}
+    </>
   );
+};
 
-  const activeCode = useMemo(
-    () => CODE_EXAMPLES.find((item) => item.id === codeLangId) ?? CODE_EXAMPLES[0],
-    [codeLangId],
-  );
+const MainLayout: React.FC = () => {
+  const {
+    usuario,
+    activeTab,
+    setActiveTab,
+    activeBanner,
+    dismissBanner,
+    activeRingingAlarm,
+    dismissRingingAlarm,
+    snoozeRingingAlarm,
+  } = useApp();
+  const isHomeActive = activeTab === 'Home';
+  const isProfileActive = activeTab === 'Configuracoes';
 
-  const trimmedTarget = customTarget.trim();
-  const displayTarget = trimmedTarget.length > 0 ? trimmedTarget : activeLocale.defaultTarget;
-  const fullGreeting = `${activeLocale.prefix}${displayTarget}${activeLocale.suffix}`;
-  const renderedCode = useMemo(
-    () => activeCode.render(fullGreeting),
-    [activeCode, fullGreeting],
-  );
-
-  const handleCopy = async (text: string, key: 'greeting' | 'code') => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.setAttribute('readonly', '');
-      textarea.style.position = 'absolute';
-      textarea.style.left = '-9999px';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
+  const renderScreen = () => {
+    switch (activeTab) {
+      case 'Home':
+        return <HomeScreen />;
+      case 'Dicas':
+        return <TipsScreen />;
+      case 'AdicionarAnimal':
+        return <AddAnimalScreen />;
+      case 'Eventos':
+        return <EventsScreen />;
+      case 'Vacinas':
+        return <VaccinesScreen />;
+      case 'Configuracoes':
+        return <SettingsScreen />;
+      default:
+        return <HomeScreen />;
     }
-    setCopiedKey(key);
-    window.setTimeout(() => {
-      setCopiedKey((prev) => (prev === key ? null : prev));
-    }, 1800);
-  };
-
-  const handleRun = () => {
-    setOutputLines((prev) => [...prev.slice(-3), fullGreeting]);
-  };
-
-  const handleReset = () => {
-    setLocaleId('en');
-    setCustomTarget('');
-    setOutputLines(['Hello, World!']);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#09090B] flex flex-col">
-      <header className="sticky top-0 z-20 bg-[#FAFAFA]/90 backdrop-blur-md border-b border-zinc-200">
-        <div className="max-w-5xl mx-auto px-6 sm:px-8 h-16 flex items-center justify-between gap-8">
-          <a
-            href="#saudacao"
-            className="font-display text-lg font-bold tracking-tight text-zinc-950 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-sm"
-          >
-            Hello, World!
-          </a>
+    <div
+      className="min-h-screen flex flex-col justify-between text-[#6E3906]"
+      style={{
+        fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+        background: 'linear-gradient(180deg, #FDF8F2 0%, #F7EDE4 100%)',
+      }}
+    >
+      {/* Barra de rolagem customizada */}
+      <PageCustomScrollbar topOffset={74} bottomOffset={74} />
 
-          <nav
-            aria-label="Navegação principal"
-            className="hidden sm:flex items-center gap-7 text-sm font-medium text-zinc-600"
+      {/* TopNavbar */}
+      <header className="sticky top-0 z-40 w-full bg-white border-b border-[#F0DFCE] shadow-[0_4px_16px_rgba(138,69,5,0.06)]">
+        <div className="max-w-[480px] h-[68px] mx-auto px-5 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab('Configuracoes')}
+            aria-label="Configurações do usuário"
+            className={`flex items-center gap-3 p-1 rounded-full text-left transition-colors min-w-0 flex-1 cursor-pointer ${
+              isProfileActive ? 'bg-[#FFF8F1]' : 'hover:bg-[#FFF8F1]'
+            }`}
           >
-            <a
-              href="#saudacao"
-              className="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0"
+            <div
+              className={`w-[42px] h-[42px] shrink-0 rounded-full bg-[#FFF3E6] border-2 border-[#D96B08] flex items-center justify-center text-[#D96B08] overflow-hidden ${
+                isProfileActive ? 'ring-4 ring-[#D96B08]/25' : ''
+              }`}
             >
-              Saudação
-            </a>
-            <a
-              href="#idiomas"
-              className="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0"
-            >
-              Idiomas
-            </a>
-            <a
-              href="#codigo"
-              className="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0"
-            >
-              Em código
-            </a>
-          </nav>
+              {usuario?.foto ? (
+                <img
+                  src={usuario.foto}
+                  alt={usuario.nome}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-medium text-[#B8651B] leading-tight">Olá,</span>
+              <span className="text-base font-bold text-[#8A4505] leading-tight truncate">
+                {usuario?.nome || 'Usuário'}
+              </span>
+            </div>
+          </button>
 
           <button
             type="button"
-            onClick={() => handleCopy(fullGreeting, 'greeting')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.98] rounded-lg transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+            onClick={() => setActiveTab('Home')}
+            aria-label="Home Screen"
+            title="Ir para Início"
+            className={`shrink-0 h-[40px] px-3 rounded-xl border-2 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:translate-y-[1px] ${
+              isHomeActive
+                ? 'bg-[#D96B08] border-[#B45304] text-white shadow-[0_3px_0_#9A4402,0_6px_14px_rgba(217,107,8,0.28)] active:shadow-[0_1px_0_#9A4402]'
+                : 'bg-[#FFF3E6] border-[#D96B08] text-[#8A4505] shadow-[0_3px_0_#D96B08,0_4px_10px_rgba(217,107,8,0.14)] hover:bg-[#FFE6CC] active:shadow-[0_1px_0_#D96B08]'
+            }`}
           >
-            {copiedKey === 'greeting' ? (
-              <>
-                <Check className="w-4 h-4" aria-hidden="true" />
-                <span>Copiado</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" aria-hidden="true" />
-                <span>Copiar saudação</span>
-              </>
-            )}
+            <svg width="20" height="20" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path
+                d="M32 33C24.5 33 19 38.8 19 45.2C19 49.4 22.4 52 26.5 52C28.8 52 30.5 51.1 32 51.1C33.5 51.1 35.2 52 37.5 52C41.6 52 45 49.4 45 45.2C45 38.8 39.5 33 32 33Z"
+                stroke="currentColor"
+                strokeWidth="4.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <ellipse cx="15.5" cy="29.5" rx="4.5" ry="6" transform="rotate(-22 15.5 29.5)" stroke="currentColor" strokeWidth="4" />
+              <ellipse cx="25.5" cy="21" rx="4.5" ry="6.2" transform="rotate(-8 25.5 21)" stroke="currentColor" strokeWidth="4" />
+              <ellipse cx="38.5" cy="21" rx="4.5" ry="6.2" transform="rotate(8 38.5 21)" stroke="currentColor" strokeWidth="4" />
+              <ellipse cx="48.5" cy="29.5" rx="4.5" ry="6" transform="rotate(22 48.5 29.5)" stroke="currentColor" strokeWidth="4" />
+            </svg>
+            <span className="text-[13px] font-bold leading-none">Início</span>
           </button>
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 sm:px-8 py-14 sm:py-20 space-y-16 sm:space-y-20">
-        <section id="saudacao" className="scroll-mt-24">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-500 mb-6">
-            <span>Primeiro programa</span>
-            <span aria-hidden="true">·</span>
-            <span>{activeLocale.label}</span>
-            <span aria-hidden="true">·</span>
-            <span className="font-mono tabular-nums">{fullGreeting.length} caracteres</span>
-          </div>
+      {/* Banner de Notificação de Evento (arrastável para o lado) */}
+      {activeBanner && (
+        <SwipeableNotificationBanner
+          key={activeBanner.id}
+          banner={activeBanner}
+          onDismiss={dismissBanner}
+        />
+      )}
 
-          <h1 className="font-display font-bold tracking-tight text-zinc-950 leading-[1.04] max-w-4xl text-[clamp(2.75rem,7vw,5.25rem)] text-balance">
-            {fullGreeting}
-          </h1>
-
-          <p className="mt-6 text-base sm:text-lg text-zinc-600 max-w-2xl leading-relaxed">
-            {activeLocale.note}
-          </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row sm:items-end gap-4 max-w-xl">
-            <div className="flex-1">
-              <label
-                htmlFor="target-input"
-                className="block text-sm font-medium text-zinc-700 mb-2"
-              >
-                Personalizar destinatário
-              </label>
-              <input
-                id="target-input"
-                type="text"
-                value={customTarget}
-                onChange={(event) => setCustomTarget(event.target.value)}
-                placeholder={activeLocale.defaultTarget}
-                maxLength={40}
-                className="w-full h-11 px-4 rounded-lg bg-white border border-zinc-300 text-zinc-950 placeholder:text-zinc-400 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors"
-              />
+      {/* Modal de Alarme Tocando (na hora configurada) */}
+      {activeRingingAlarm && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          data-testid="active-alarm-modal"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) dismissRingingAlarm();
+          }}
+          className="fixed inset-0 z-[80] bg-[#281402]/60 flex items-center justify-center p-4"
+        >
+          <div className="w-full max-w-[340px] bg-[#FFFDFB] border-2 border-[#D96B08] rounded-[24px] p-6 shadow-[0_14px_36px_rgba(138,69,5,0.3)] flex flex-col items-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-[#FFF3E6] border-2 border-[#D96B08] text-[#D96B08] flex items-center justify-center animate-bounce">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="12" cy="13" r="8" />
+                <path d="M12 9v4l2.5 2.5" />
+                <path d="M5 3 2 6" />
+                <path d="m22 6-3-3" />
+              </svg>
             </div>
-
-            {(customTarget.length > 0 || localeId !== 'en') && (
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-wide text-[#D96B08]">
+                Alarme Tocando • {activeRingingAlarm.horario}
+              </p>
+              <h3 className="text-[19px] font-bold text-[#8A4505] mt-0.5">
+                {activeRingingAlarm.ev.titulo}
+              </h3>
+              <p className="text-[13px] font-medium text-[#6E3906] mt-1">
+                Pet(s): {activeRingingAlarm.animaisNomes}
+                {activeRingingAlarm.ev.frequencia
+                  ? ` • ${activeRingingAlarm.ev.frequencia}`
+                  : ''}{' '}
+                • {getAlarmSoundProfileLabel()}
+              </p>
+            </div>
+            <div className="w-full grid grid-cols-2 gap-2.5 pt-2">
               <button
                 type="button"
-                onClick={handleReset}
-                className="h-11 px-4 inline-flex items-center justify-center gap-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                onClick={() => snoozeRingingAlarm(5)}
+                className="h-11 rounded-full border-[1.5px] border-[#EBD7C3] bg-white text-[#8A4505] text-[13px] font-bold"
               >
-                <RotateCcw className="w-4 h-4" aria-hidden="true" />
-                <span>Restaurar</span>
+                Soneca (+5 min)
               </button>
-            )}
-          </div>
-        </section>
-
-        <section id="idiomas" className="scroll-mt-24 pt-12 border-t border-zinc-200">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-zinc-950">
-              Escolha um idioma
-            </h2>
-            <p className="text-sm text-zinc-500">
-              A saudação e os exemplos de código atualizam em tempo real.
-            </p>
-          </div>
-
-          <div
-            role="group"
-            aria-label="Idiomas disponíveis"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-          >
-            {LOCALES.map((locale) => {
-              const isSelected = locale.id === activeLocale.id;
-              return (
-                <button
-                  key={locale.id}
-                  type="button"
-                  onClick={() => setLocaleId(locale.id)}
-                  aria-pressed={isSelected}
-                  className={`px-4 py-3 text-left rounded-xl border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                    isSelected
-                      ? 'bg-zinc-950 text-white border-zinc-950'
-                      : 'bg-white text-zinc-800 border-zinc-200 hover:border-zinc-400'
-                  }`}
-                >
-                  <div className="text-sm font-semibold whitespace-nowrap truncate">
-                    {locale.label}
-                  </div>
-                  <div
-                    className={`text-xs mt-0.5 whitespace-nowrap truncate ${
-                      isSelected ? 'text-zinc-300' : 'text-zinc-500'
-                    }`}
-                  >
-                    {locale.nativeName}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="codigo" className="scroll-mt-24 pt-12 border-t border-zinc-200">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-zinc-950">
-              Em diferentes linguagens
-            </h2>
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
-              <span className="font-mono">{activeCode.filename}</span>
-              <span aria-hidden="true">·</span>
-              <span className="font-mono tabular-nums">Criada em {activeCode.year}</span>
-            </div>
-          </div>
-
-          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-              <div
-                role="tablist"
-                aria-label="Linguagens de programação"
-                className="flex items-center gap-1 overflow-x-auto"
+              <button
+                type="button"
+                onClick={dismissRingingAlarm}
+                className="h-11 rounded-full bg-[#D96B08] text-white text-[13px] font-bold"
               >
-                {CODE_EXAMPLES.map((lang) => {
-                  const isActive = lang.id === activeCode.id;
-                  return (
-                    <button
-                      key={lang.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      onClick={() => setCodeLangId(lang.id)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                        isActive
-                          ? 'bg-zinc-950 text-white'
-                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
-                      }`}
-                    >
-                      {lang.name}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleCopy(renderedCode, 'code')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
-                >
-                  {copiedKey === 'code' ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Copiado</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Copiar</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleRun}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
-                >
-                  <Play className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>Executar</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200">
-              <div className="lg:col-span-7 p-6 bg-zinc-50/70 overflow-x-auto">
-                <pre className="font-mono text-sm leading-7 text-zinc-900">
-                  <code>{renderedCode}</code>
-                </pre>
-              </div>
-
-              <div className="lg:col-span-5 p-6 flex flex-col justify-between bg-white">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-xs font-medium text-zinc-500">Saída padrão</span>
-                    {outputLines.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setOutputLines([])}
-                        className="text-xs font-medium text-zinc-500 hover:text-zinc-950 transition-colors cursor-pointer whitespace-nowrap shrink-0"
-                      >
-                        Limpar
-                      </button>
-                    )}
-                  </div>
-
-                  {outputLines.length === 0 ? (
-                    <p className="font-mono text-sm text-zinc-400">
-                      Clique em Executar para imprimir a saudação.
-                    </p>
-                  ) : (
-                    <ul className="space-y-1.5 font-mono text-sm text-zinc-900">
-                      {outputLines.map((line, index) => (
-                        <li key={`${line}-${index}`} className="flex items-baseline gap-3">
-                          <span className="text-xs text-zinc-400 select-none tabular-nums">
-                            {String(index + 1).padStart(2, '0')}
-                          </span>
-                          <span className="break-all">{line}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
+                Desligar Alarme
+              </button>
             </div>
           </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-zinc-200 mt-auto">
-        <div className="max-w-5xl mx-auto px-6 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500">
-          <span>Hello, World!</span>
-          <span>O ponto de partida clássico da programação.</span>
         </div>
-      </footer>
+      )}
+
+      {/* Main Viewport */}
+      <main className="flex-1 w-full">{renderScreen()}</main>
+
+      {/* BottomNavbar */}
+      <nav
+        aria-label="Navegação principal"
+        className="sticky bottom-0 z-40 w-full bg-white border-t border-[#F0DFCE] shadow-[0_-4px_16px_rgba(138,69,5,0.08)]"
+      >
+        <div className="max-w-[480px] h-[68px] mx-auto grid grid-cols-4">
+          {([
+            {
+              key: 'Dicas',
+              label: 'Dicas',
+              icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                </svg>
+              ),
+            },
+            {
+              key: 'AdicionarAnimal',
+              label: 'Adicionar Animal',
+              icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              ),
+            },
+            {
+              key: 'Eventos',
+              label: 'Eventos',
+              icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              ),
+            },
+            {
+              key: 'Vacinas',
+              label: 'Vacinas',
+              icon: (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m18 2 4 4" />
+                  <path d="m17 7 3-3" />
+                  <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5" />
+                  <path d="m9 11 4 4" />
+                  <path d="m5 19-3 3" />
+                  <path d="m14 4 6 6" />
+                </svg>
+              ),
+            },
+          ] as const).map((tab, idx, arr) => {
+            const isActive = activeTab === tab.key;
+            const isNextActive = idx < arr.length - 1 && activeTab === arr[idx + 1].key;
+            const showDivider = idx < arr.length - 1 && !isActive && !isNextActive;
+
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                aria-label={tab.label}
+                aria-current={isActive ? 'page' : undefined}
+                className={`relative flex items-center justify-center transition-colors ${
+                  isActive
+                    ? 'bg-[#D96B08] text-white'
+                    : 'text-[#B8651B] hover:bg-[#FFF8F1] hover:text-[#D96B08]'
+                }`}
+              >
+                {tab.icon}
+                {showDivider && (
+                  <span className="absolute right-0 top-4 bottom-4 w-px bg-[#EBD7C3]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
+  );
+};
+
+const RootRouter: React.FC = () => {
+  const { isInitializing, isAuthenticated, activePhotoViewer, closePhotoViewer } = useApp();
+
+  if (isInitializing) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-3 text-[#8A4505] font-semibold"
+        style={{ background: 'linear-gradient(180deg, #FDF8F2 0%, #F7EDE4 100%)' }}
+      >
+        Carregando PetMood...
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {isAuthenticated ? <MainLayout /> : <AuthFlow />}
+      <PhotoViewerModal photo={activePhotoViewer} onClose={closePhotoViewer} />
+    </>
+  );
+};
+
+export default function App() {
+  useEffect(() => {
+    unlockWebAlarmAudio();
+  }, []);
+
+  return (
+    <AppProvider>
+      <RootRouter />
+    </AppProvider>
   );
 }
